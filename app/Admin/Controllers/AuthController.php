@@ -4,6 +4,8 @@ use Encore\Admin\Controllers\AuthController as BaseAuthController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Lang;
 use Illuminate\Support\Facades\Validator;
+use Encore\Admin\Facades\Admin;
+use Illuminate\Support\Facades\DB;
 class AuthController extends BaseAuthController
 {
     public function getLogin()
@@ -40,6 +42,9 @@ class AuthController extends BaseAuthController
         unset($credentials['captcha']);
 
         if ($this->guard()->attempt($credentials)) {
+            DB::table('admin_users')
+                ->where('id', Admin::user()->id)
+                ->update(['last_login_time'=>date('Y-m-d H:i:s'), 'last_login_ip'=>$_SERVER['REMOTE_ADDR']]);
             return $this->sendLoginResponse($request);
         }
 
