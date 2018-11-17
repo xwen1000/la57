@@ -12,5 +12,6 @@ Route::group([
 
     // $router->get('/', 'HomeController@index');
      $router->get('/', 'IndexController@index');
-
+     $router->get('baseset', 'BasesetController@index');
+     $router->post('baseset/update/{id}', 'BasesetController@update');
 });

@@ -15,7 +15,7 @@ class IndexController extends Controller
     public function index(Content $content)
     {
         return $content
-            ->header('XWEN的后台')
+            ->header('后台')
             ->description('主页')
             ->row(Dashboard::index());
     }
