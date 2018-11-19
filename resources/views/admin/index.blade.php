@@ -17,7 +17,7 @@
               <div class="col-md-3">
                 <p><i class="fa fa-tree fa-3x" style="color: #20a53a;" aria-hidden="true"></i></p>
                 <p style="padding-top: 10px;">农产品总量<span style="color: #20a53a; font-weight: bold; font-size: 18px;  padding: 0 3px;">{{ $gnum }}</span>件</p>
-                <p><a href="#">管理</a>&nbsp;&nbsp;|&nbsp;&nbsp;<a href="#">添加</a></p>
+                <p><a href="{{ url('/admin/goods') }}">管理</a>&nbsp;&nbsp;|&nbsp;&nbsp;<a href="{{ url('/admin/goods/create') }}">添加</a></p>
               </div>
               <div class="col-md-3">
                 <p><i class="fa fa-bath fa-3x" style="color: #ffaa31;" aria-hidden="true"></i></p>

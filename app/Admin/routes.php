@@ -14,4 +14,8 @@ Route::group([
      $router->get('/', 'IndexController@index');
      $router->get('baseset', 'BasesetController@index');
      $router->post('baseset/update/{id}', 'BasesetController@update');
+     $router->resource('goods', GoodController::class);
+     $router->get('goods/delete/{id}', 'GoodController@delete');
+     $router->get('goods/{id}/isselling/{isSelling}', 'GoodController@updateS');
+     $router->post('goods/bselling', 'GoodController@batchSelling');
 });
