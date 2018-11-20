@@ -18,4 +18,7 @@ Route::group([
      $router->get('goods/delete/{id}', 'GoodController@delete');
      $router->get('goods/{id}/isselling/{isSelling}', 'GoodController@updateS');
      $router->post('goods/bselling', 'GoodController@batchSelling');
+     $router->resource('room', RoomController::class);
+     $router->get('room/delete/{id}', 'RoomController@delete');
+     $router->get('room/{id}/isselling/{isSelling}', 'RoomController@updateS');
 });

@@ -11,4 +11,14 @@ class Good extends Model
 	{
 	    return json_decode($goodsImgs, true);
 	}
+
+	public static function del($id)
+	{
+        self::where('id', $id)->update(['is_delete'=>2]);
+	}
+
+	public static function upd($id, $data)
+	{
+        self::where('id', $id)->update($data);
+	}
 }

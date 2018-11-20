@@ -275,7 +275,7 @@ class GoodController extends Controller
     */
     public function delete($id) 
     {
-        DB::table('goods')->where('id', $id)->update(['is_delete'=>2]);
+        Good::del($id);
         return redirect('/admin/goods');
     }
 
@@ -289,7 +289,7 @@ class GoodController extends Controller
         {
             $data['in_selling'] = 0; //上架
         }
-        DB::table('goods')->where('id', $id)->update($data);
+        Goods::upd($id, $data);
         return redirect('/admin/goods');
     }
     /**
