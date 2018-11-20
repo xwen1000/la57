@@ -27,7 +27,7 @@
               <div class="col-md-3">
                 <p><i class="fa fa-file-text-o fa-3x" style="color: #ff31be;" aria-hidden="true"></i></p>
                 <p style="padding-top: 10px;">资讯总量<span style="color: #ff31be; font-weight: bold; font-size: 18px;  padding: 0 3px;">{{ $nnum }}</span>件</p>
-                <p><a href="#">管理</a>&nbsp;&nbsp;|&nbsp;&nbsp;<a href="#">添加</a></p>
+                <p><a href="{{ url('/admin/news') }}">管理</a>&nbsp;&nbsp;|&nbsp;&nbsp;<a href="{{ url('/admin/news/create') }}">添加</a></p>
               </div>
               <div class="col-md-3">
                 <p><i class="fa fa-users fa-3x" style="color: #29baff;" aria-hidden="true"></i></p>

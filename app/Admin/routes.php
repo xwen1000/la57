@@ -21,4 +21,6 @@ Route::group([
      $router->resource('room', RoomController::class);
      $router->get('room/delete/{id}', 'RoomController@delete');
      $router->get('room/{id}/isselling/{isSelling}', 'RoomController@updateS');
+     $router->resource('news', NewsController::class);
+     $router->get('news/{id}/status/{status}', 'NewsController@updateS');
 });
