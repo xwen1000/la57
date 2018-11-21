@@ -23,4 +23,8 @@ Route::group([
      $router->get('room/{id}/isselling/{isSelling}', 'RoomController@updateS');
      $router->resource('news', NewsController::class);
      $router->get('news/{id}/status/{status}', 'NewsController@updateS');
+     $router->resource('members', MemberController::class);
+     $router->get('members/addMemberCard/{id}', 'MemberController@addMemberCard');
+     $router->post('members/saveMemberCard', 'MemberController@saveMemberCard');
+     // $router->get('members/getBalance', 'MemberController@getBalance');
 });

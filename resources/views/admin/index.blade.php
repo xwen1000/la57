@@ -32,7 +32,7 @@
               <div class="col-md-3">
                 <p><i class="fa fa-users fa-3x" style="color: #29baff;" aria-hidden="true"></i></p>
                 <p style="padding-top: 10px;">会员总量<span style="color: #29baff; font-weight: bold; font-size: 18px;  padding: 0 3px;">{{ $mnum }}</span>件</p>
-                <p><a href="#">管理</a></p>
+                <p><a href="{{ url('/admin/members') }}">管理</a></p>
               </div>
             </div>
         </div>
