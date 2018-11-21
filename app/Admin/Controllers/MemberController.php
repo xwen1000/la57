@@ -90,6 +90,11 @@ class MemberController extends Controller
         $grid->disableCreateButton();
         $grid->disableExport();
 
+        $grid->filter(function($filter){
+            $filter->disableIdFilter();
+            $filter->equal('phone', '手机号');
+        });
+
         $grid->id('ID');
         $grid->headimgurl('用户头像')->image(100, 100);
         $grid->nickname('会员名称');
