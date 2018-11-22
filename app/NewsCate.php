@@ -17,4 +17,9 @@ class NewsCate extends Model
 		    			})->all();
 		 return $catesArr;
     }
+    public static function del($id)
+    {
+        $res = self::where('id', $id)->delete();
+        return $res;
+    }
 }

@@ -33,4 +33,6 @@ Route::group([
      $router->get('dian/{id}/isselling/{isSelling}', 'DianController@updateS');
      $router->resource('npccates', NpcCateController::class);
      $router->get('npccates/delete/{id}', 'NpcCateController@delete');
+     $router->resource('newscates', NewsCateController::class);
+     $router->get('newscates/delete/{id}', 'NewsCateController@delete');
 });
