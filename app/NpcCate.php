@@ -18,4 +18,10 @@ class NpcCate extends Model
                         });
         return $npcCatesArr;
     }
+
+    public static function del($id)
+    {
+        $res = self::where('id', $id)->delete();
+        return $res;
+    }
 }

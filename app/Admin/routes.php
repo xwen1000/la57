@@ -26,5 +26,11 @@ Route::group([
      $router->resource('members', MemberController::class);
      $router->get('members/addMemberCard/{id}', 'MemberController@addMemberCard');
      $router->post('members/saveMemberCard', 'MemberController@saveMemberCard');
-     // $router->get('members/getBalance', 'MemberController@getBalance');
+     $router->resource('tables', TablesController::class);
+     $router->get('tables/down/{id}', 'TablesController@down');
+     $router->resource('dian', DianController::class);
+     $router->get('dian/delete/{id}', 'DianController@delete');
+     $router->get('dian/{id}/isselling/{isSelling}', 'DianController@updateS');
+     $router->resource('npccates', NpcCateController::class);
+     $router->get('npccates/delete/{id}', 'NpcCateController@delete');
 });
