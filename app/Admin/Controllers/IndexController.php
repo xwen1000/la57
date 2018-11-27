@@ -50,25 +50,25 @@ class IndexController extends Controller
         $buyTotal = 0;
         $chargeTotal = 0;
         foreach ($oinfo as $k => $v) {
-            $allTotal += $v['goods_amount'] - $v['card_amount'];
-            if($v['order_type'] != 2)
+            $allTotal += $v->goods_amount - $v->card_amount;
+            if($v->order_type != 2)
             {
-                if($v['order_type'] == 0)
+                if($v->order_type == 0)
                 {
-                    $goodsTotal += $v['goods_amount'];
+                    $goodsTotal += $v->goods_amount;
                 }
-                else if($v['order_type'] == 1)
+                else if($v->order_type == 1)
                 {
-                    $roomTotal += $v['goods_amount'];
+                    $roomTotal += $v->goods_amount;
                 }
             }
-            if($v['order_type'] == 0 || $v['order_type'] == 1)
+            if($v->order_type == 0 || $v->order_type == 1)
             {
-                $buyTotal += ($v['goods_amount'] - $v['card_amount']);
+                $buyTotal += ($v->goods_amount - $v->card_amount);
             }
-            else if($value['order_type'] == 2)
+            else if($v->order_type == 2)
             {
-                $chargeTotal += $v['goods_amount'];
+                $chargeTotal += $v->goods_amount;
             }
         }
         $ninfo = DB::table('news')

@@ -35,4 +35,14 @@ Route::group([
      $router->get('npccates/delete/{id}', 'NpcCateController@delete');
      $router->resource('newscates', NewsCateController::class);
      $router->get('newscates/delete/{id}', 'NewsCateController@delete');
+     $router->resource('orders', OrderController::class);
+     $router->resource('cards', CardsController::class);
+     $router->get('cards/delete/{id}', 'CardsController@delete');
+     $router->get('cards/{id}/isselling/{isSelling}', 'CardsController@updateS');
+     $router->resource('banners', BannerController::class);
+     $router->resource('activities', ActivityController::class);
+     $router->get('activities/delete/{id}', 'ActivityController@delete');
+     $router->get('activities/{id}/isselling/{isSelling}', 'ActivityController@updateS');
+     $router->get('finances/index', 'FinanceController@index');
+     $router->get('finances/getSearch', 'FinanceController@getSearch');
 });
