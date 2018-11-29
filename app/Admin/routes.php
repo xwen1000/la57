@@ -45,4 +45,12 @@ Route::group([
      $router->get('activities/{id}/isselling/{isSelling}', 'ActivityController@updateS');
      $router->get('finances/index', 'FinanceController@index');
      $router->get('finances/getSearch', 'FinanceController@getSearch');
+     $router->get('finances/charges', 'FinanceController@charges');
+     $router->get('finances/getCharges', 'FinanceController@getCharges');
+     $router->get('finances/buys', 'FinanceController@buys');
+     $router->get('finances/getBuys', 'FinanceController@getBuys');
+     $router->get('finances/sales', 'FinanceController@sales');
+     $router->get('finances/getSales', 'FinanceController@getSales');
+     $router->get('finances/express', 'FinanceController@express');
+     $router->post('finances/express/store', 'FinanceController@store');
 });

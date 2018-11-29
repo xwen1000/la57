@@ -23,8 +23,8 @@ class FinanceController extends Controller
         $endDate = $carbon->endOfMonth()->timestamp;
         $retArr = $this->getTotal($startDate, $endDate);
     	return view('admin.finance-index', [
-    		'currYearMonth' => $carbon->year . '-' . $carbon->month,
-    		'lastYearMonth' => $carbon->year-1 . '-' . '12',
+    		'currYearMonth' => $carbon->format('Y-m'),
+    		'lastYearMonth' => $carbon->subYear()->endOfYear()->format('Y-m'),
     		'allTotal' => $retArr['allTotal'],
     		'goodsTotal' => $retArr['goodsTotal'],
     		'roomTotal' => $retArr['roomTotal'],
@@ -33,6 +33,114 @@ class FinanceController extends Controller
     	]);
 
     }
+
+    public function charges(Content $content)
+    {
+    	return $content->header('后台')
+		            ->description('会员充值明细')
+		            ->body($this->bodyCharges());
+    }
+
+    public function buys(Content $content)
+    {
+    	return $content->header('后台')
+		            ->description('微信购买明细')
+		            ->body($this->bodyBuys());
+	}
+
+	public function sales(Content $content)
+    {
+    	return $content->header('后台')
+		            ->description('农产品销售明细')
+		            ->body($this->bodySales());
+	}
+
+	public function express(Content $content)
+    {
+    	return $content->header('后台')
+		            ->description('运费设置')
+		            ->body($this->bodyExpress());
+	}
+
+	protected function bodyExpress()
+	{
+         $list = DB::table('regions')
+		         	->where('parent_id', 1)
+		         	->where('level', 1)
+		         	->orderBy('id')
+		         	->get()->all();
+		return view('admin.finance-express', [
+			'list' => $list
+		]);
+	}
+
+	public function store()
+	{
+		$id = request()->input('id');
+		$express = request()->input('express');
+		$heavy = request()->input('heavy');
+		$oexpress = request()->input('oexpress');
+		$oheavy = request()->input('oheavy');
+		foreach ($id as $k => $v) {
+			DB::table('regions')->where('id', $v)->update([
+				'express' => $express[$k],
+				'heavy' => $heavy[$k],
+				'oexpress' => $oexpress[$k],
+				'oheavy' => $oheavy[$k],
+			]);
+		}
+		return redirect('/admin/finances/express');
+	}
+
+	protected function bodySales()
+    {
+    	$carbon = Carbon::now();
+    	return view('admin.finance-sales', [
+    		'currYearMonth' => $carbon->format('Y-m'),
+    		'lastYearMonth' => $carbon->subYear()->endOfYear()->format('Y-m')
+    	]);
+	}
+
+	public function getSales()
+    {
+    	$startDate = request()->input('startDate');
+    	$endDate = request()->input('endDate');
+    	$goodsId = request()->input('goodsId');
+    	$oinfo = DB::table('orders as o')
+    				->join('order_goods as og', 'o.id', '=', 'og.orders_id')
+    				->select('o.id', 'o.order_sn', 'og.goods_name', 'og.card_balance', 'og.quantity', 'og.goods_price', 'o.book_days', 'o.order_time', 'o.pay_time')
+                    ->whereBetween('o.order_time', [strtotime($startDate), strtotime($endDate)])
+                    ->whereIn('o.order_status', [1,2,3,4])
+                    ->whereIn('o.order_type', [0,1])
+                    ->when($goodsId, function($query)use($goodsId){
+                    	return $query->where('o.id', $goodsId);
+                    })
+                    ->orderBy('o.id', 'desc')
+                    ->get()->map(function($item, $key){
+                    	$item->pay_time = $item->pay_time ? date('Y-m-d H:i:s', $item->pay_time) : '';
+                    	$item->order_time = $item->order_time ? date('Y-m-d H:i:s', $item->order_time) : '';
+                    	return $item;
+                    })->all();
+    	return response()->json($oinfo);
+    }
+
+	protected function bodyBuys()
+    {
+    	$carbon = Carbon::now();
+    	return view('admin.finance-buys', [
+    		'currYearMonth' => $carbon->format('Y-m'),
+    		'lastYearMonth' => $carbon->subYear()->endOfYear()->format('Y-m')
+    	]);
+	}
+
+    protected function bodyCharges()
+    {
+    	$carbon = Carbon::now();
+    	return view('admin.finance-charges', [
+    		'currYearMonth' => $carbon->format('Y-m'),
+    		'lastYearMonth' => $carbon->subYear()->endOfYear()->format('Y-m')
+    	]);
+	}
 
     protected function getTotal($startDate, $endDate)
     {
@@ -95,6 +203,45 @@ class FinanceController extends Controller
         	$retArr[$v] = $this->getTotal($startDate, $endDate);
     	}
     	return response()->json($retArr);
+    }
+
+    public function getCharges()
+    {
+    	$startDate = request()->input('startDate');
+    	$endDate = request()->input('endDate');
+    	$oinfo = DB::table('orders as o')
+    				->join('order_goods as og', 'o.id', '=', 'og.orders_id')
+    				->select('o.id', 'o.order_sn', 'og.goods_name', 'o.nickname', 'o.pay_amount', 'o.order_time', 'o.pay_time')
+                    ->whereBetween('o.order_time', [strtotime($startDate), strtotime($endDate)])
+                    ->whereIn('o.order_status', [1,2,3,4])
+                    ->where('o.order_type', 2)
+                    ->orderBy('o.id', 'desc')
+                    ->get()->map(function($item, $key){
+                    	$item->pay_time = $item->pay_time ? date('Y-m-d H:i:s', $item->pay_time) : '';
+                    	$item->order_time = $item->order_time ? date('Y-m-d H:i:s', $item->order_time) : '';
+                    	return $item;
+                    })->all();
+    	return response()->json($oinfo);
+    }
+
+    public function getBuys()
+    {
+    	$startDate = request()->input('startDate');
+    	$endDate = request()->input('endDate');
+    	$oinfo = DB::table('orders as o')
+    				->join('order_goods as og', 'o.id', '=', 'og.orders_id')
+    				->select('o.id', 'o.order_sn', 'og.goods_name', 'o.nickname', 'o.pay_amount', 'o.order_time', 'o.pay_time')
+                    ->whereBetween('o.order_time', [strtotime($startDate), strtotime($endDate)])
+                    ->whereIn('o.order_status', [1,2,3,4])
+                    ->whereIn('o.order_type', [0,1])
+                    ->whereColumn('o.goods_amount', '>=', 'o.card_amount')
+                    ->orderBy('o.id', 'desc')
+                    ->get()->map(function($item, $key){
+                    	$item->pay_time = $item->pay_time ? date('Y-m-d H:i:s', $item->pay_time) : '';
+                    	$item->order_time = $item->order_time ? date('Y-m-d H:i:s', $item->order_time) : '';
+                    	return $item;
+                    })->all();
+    	return response()->json($oinfo);
     }
 
 }
