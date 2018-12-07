@@ -16,7 +16,7 @@ class AddTo1AdminUsers extends Migration
         Schema::table('admin_users', function (Blueprint $table) {
             //
             $table->timestamp('last_login_time')->nullable();
-            $table->ipAddress('last_login_ip');
+            $table->ipAddress('last_login_ip')->default('');
         });
     }
 

@@ -22,12 +22,14 @@ class CreateBasesetsTable extends Migration
             $table->string('web_right')->default('')->comment('网站版权');
             $table->text('web_logo')->nullable()->comment('logo图片地址');
             $table->string('hot_search')->default('')->comment('热门搜索词');
-            $table->string('smtp_server', 80)->default('')->comment('邮件发送服务器');
+            $table->string('smtp_server')->default('')->comment('邮件发送服务器');
             $table->smallInteger('smtp_port')->default(0)->comment('服务器(SMTP)端口');
-            $table->string('smtp_user', 80)->default('')->comment('邮箱账号');
-            $table->string('smtp_pwd', 80)->default('')->comment('邮箱密码/授权码');
-            $table->string('test_eamil', 80)->default('')->comment('测试接收的邮件地址');
+            $table->string('smtp_user')->default('')->comment('邮箱账号');
+            $table->string('smtp_pwd',)->default('')->comment('邮箱密码/授权码');
+            $table->string('test_eamil')->default('')->comment('测试接收的邮件地址');
             $table->text('smtp_con')->nullable()->comment('邮件模板');
+            $table->string('web_domain')->default('')->comment('网站域名');
+            $table->timestamp('update_time')->nullable()->comment('网站更新时间');
             $table->timestamps();
         });
     }

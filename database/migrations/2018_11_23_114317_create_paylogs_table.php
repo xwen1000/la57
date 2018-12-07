@@ -15,14 +15,14 @@ class CreatePaylogsTable extends Migration
     {
         Schema::create('paylogs', function (Blueprint $table) {
             $table->increments('id');
-            $table->string('pay_sn', 50)->default('');
+            $table->string('pay_sn')->default('');
             $table->integer('order_id')->default(0);
             $table->decimal('pay_amount', 10, 2)->default(0);
             $table->integer('pay_start_time')->default(0);
             $table->integer('pay_done_time')->default(0);
-            $table->string('transaction_id', 50)->default('');
-            $table->string('refound_id', 50)->default('');
-            $table->string('pay_type', 50)->default('');
+            $table->string('transaction_id')->default('');
+            $table->string('refound_id')->default('');
+            $table->string('pay_type')->default('');
             $table->tinyInteger('pay_status')->default(0);
             $table->string('prepay_id')->default('');
             $table->timestamps();

@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateOrderLogsTable extends Migration
+class CreateMemberTokensTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,13 +13,11 @@ class CreateOrderLogsTable extends Migration
      */
     public function up()
     {
-        Schema::create('order_logs', function (Blueprint $table) {
+        Schema::create('member_tokens', function (Blueprint $table) {
             $table->increments('id');
-            $table->string('manage')->default('');
-            $table->integer('order_id')->default(0);
-            $table->mediumText('remark');
-            $table->integer('time')->default(0);
-            $table->string('do')->default('');
+            $table->integer('member_id')->default(0);
+            $table->string('token')->default('');
+            $table->integer('expires')->default(0);
             $table->timestamps();
         });
     }
@@ -31,6 +29,6 @@ class CreateOrderLogsTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('order_logs');
+        Schema::dropIfExists('member_tokens');
     }
 }

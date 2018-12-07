@@ -17,7 +17,7 @@ class CreateGoodsTable extends Migration
             $table->increments('id');
             $table->integer('cate_id')->default(0);
             $table->integer('ncp_cate_id')->default(0);
-            $table->string('goods_name', 50)->default('');
+            $table->string('goods_name')->default('');
             $table->string('image_url')->default('');
             $table->mediumText('goods_desc')->nullable();
             $table->text('goods_imgs')->nullable();
@@ -34,8 +34,8 @@ class CreateGoodsTable extends Migration
             $table->integer('time')->default(0);
             $table->integer('card_balance')->default(0);
             $table->tinyInteger('is_delete')->default(1)->comment('是否删除1正常2已删除');
-            $table->string('unit', 50)->default('');
-            $table->string('goods_sn', 60)->default('');
+            $table->string('unit')->default('');
+            $table->string('goods_sn')->default('');
             $table->tinyInteger('is_recommend')->default(0);
             $table->tinyInteger('is_new')->default(0);
             $table->mediumText('desc')->nullable();
@@ -45,6 +45,7 @@ class CreateGoodsTable extends Migration
             $table->string('room_cw')->default('');
             $table->string('room_mj')->default('');
             $table->string('room_rs')->default('');
+            $table->tinyInteger('state')->default(0)->comment('1:新品2:推荐');
             $table->timestamps();
         });
     }

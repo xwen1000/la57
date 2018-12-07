@@ -7,6 +7,12 @@ use Illuminate\Database\Eloquent\Model;
 class Order extends Model
 {
     //
+
+	public function members()
+    {
+        return $this->belongsTo(Member::class, 'buyer_id', 'id');
+    }
+
     public static function getInfo($id)
     {
 

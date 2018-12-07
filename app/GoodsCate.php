@@ -15,11 +15,12 @@ class GoodsCate extends Model
                     ->where('state', 1)
                     ->orderBy('sort', 'desc')
                     ->orderBy('id', 'desc')
-                    ->get();
-        $cateArr = $cates->flatMap(function($item, $key){
-                        $cateArr[$item->id] = $item->cate_name;
-                        return $cateArr;
-                    })->all();
+                    ->get()->toArray();
+        $cateArr = [];
+        foreach( $cates as $k => $v )
+        {
+            $cateArr[$v['id']] = $v['cate_name'];
+        }
         return $cateArr;
     }
 }

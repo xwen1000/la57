@@ -9,6 +9,7 @@ use Encore\Admin\Form;
 use Encore\Admin\Controllers\HasResourceActions;
 use App\Good;
 use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 class RoomController extends Controller 
 {
@@ -22,6 +23,66 @@ class RoomController extends Controller
             ->body($this->grid());
 	}
 
+    public function sale($id, Content $content)
+    {
+        return $content
+            ->header('后台')
+            ->description('客房管理')
+            ->body($this->saleBody($id));
+    }
+
+    protected function saleBody($id)
+    {
+        $gInfo = DB::table('goods')
+                        ->where('id', $id)
+                        ->first();
+        if($gInfo->cate_id == 8 ) {
+
+            $gInfo->card_good_list = DB::table('card_goods')
+                                        ->where('cid', $goodInfo->id)
+                                        ->get()->all();
+        }
+
+        if($months = request()->input('months'))
+        {
+            $now = $months;
+            $start = $now.'-01';
+            $end =  date("Y-m-d", strtotime("+1 months", strtotime($start)));
+        }else{
+            $now = date('Y-m');
+            $start = $now.'-01';
+            $end =  date("Y-m-d", strtotime("+1 months", strtotime($start)));
+        }
+        $nextM =  date("Y-m", strtotime("+1 months", strtotime($now)));
+        $lastM =  date("Y-m", strtotime("-1 months", strtotime($now)));
+        $olist = DB::table('order_goods')
+                    ->where('goods_id', $id)
+                    ->whereBetween('goods_date', [$start, $end])
+                    ->get()->all();
+        $oarr = [];
+        foreach ($olist as $k => $v) {
+            $oarr[$v->goods_date] = 0;
+            $oarr[$v->goods_date] += $v->quantity;
+        }
+        $resArr = [];
+        while ($start < $end) {
+            $nowNums = intval(empty($oarr[$start])?0:$oarr[$start]);
+            $resArr[] = [
+                'time'=>date("d",strtotime($start)).'号',
+                'quantity'=>$gInfo->goods_stock-$nowNums,
+                'now_nums'=>$nowNums
+            ];
+            $start = date("Y-m-d",strtotime("+1 day", strtotime($start)));
+        }
+        return view('admin.room-sale', [
+            'resArr' => $resArr,
+            'now' => $now,
+            'nextM' => $nextM,
+            'lastM' => $lastM,
+            'id' => $id
+        ]);
+    }
+
 	protected function grid()
     {
         $grid = new Grid(new Good);
@@ -31,7 +92,7 @@ class RoomController extends Controller
             $actions->disableEdit();
             $actions->disableView();
             $actions->append('<a href="/admin/room/'.$actions->row->id.'/edit" style="margin-right:5px;">修改</a>');
-            $actions->append('<a href="" style="margin-right:5px;">销售</a>');
+            $actions->append('<a href="/admin/room/sale/'.$actions->row->id.'" style="margin-right:5px;">销售</a>');
             $actions->append('<a href="/admin/room/'.$actions->row->id.'/isselling/'.$actions->row->in_selling.'" style="margin-right:5px;">下架</a>');
             $actions->append('<a href="/admin/room/delete/'.$actions->row->id.'" style="margin-right:5px;">删除</a>');
         });

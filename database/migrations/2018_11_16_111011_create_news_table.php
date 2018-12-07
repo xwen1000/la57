@@ -15,15 +15,15 @@ class CreateNewsTable extends Migration
     {
         Schema::create('news', function (Blueprint $table) {
             $table->increments('id');
-            $table->string('title');
-            $table->integer('cate_id');
-            $table->string('author');
-            $table->string('image');
-            $table->string('description');
-            $table->longText('content');
-            $table->integer('sort');
-            $table->tinyInteger('status')->comment('文章状态 0-未审核；1-发布');
-            $table->integer('pv');
+            $table->string('title')->default('');
+            $table->integer('cate_id')->default(0);
+            $table->string('author')->default('');
+            $table->string('image')->default('');
+            $table->string('description')->default('');
+            $table->longText('content')->nullable();
+            $table->integer('sort')->default(0);
+            $table->tinyInteger('status')->default(0)->comment('文章状态 0-未审核；1-发布');
+            $table->integer('pv')->default(0);
             $table->timestamps();
         });
     }

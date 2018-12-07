@@ -15,6 +15,21 @@ class OrderController extends Controller
 {
     use HasResourceActions;
 
+    protected static $statusArr = [
+                    0 => '待支付',
+                    1 => '待确认',
+                    2 => '待发货',
+                    3 => '配送中',
+                    4 => '已签收',
+                    5 => '已取消',
+                    6 => '未发货退款处理中',
+                    7 => '未发货退款成功',
+                    8 => '已发货退款处理中',
+                    9 => '已发货退款成功',
+                ];
+
+    protected static $cateArr = [0=>'农产品', 1=>'客房', 2=>'伊甸卡'];
+
     /**
      * Index interface.
      *
@@ -27,6 +42,58 @@ class OrderController extends Controller
             ->header('后台')
             ->description('订单管理')
             ->body($this->grid());
+    }
+
+    public function realStock(Content $content)
+    {
+        return $content
+            ->header('后台')
+            ->description('订单管理')
+            ->body($this->realStockGrid());
+    }
+
+    protected function realStockGrid()
+    {
+        $grid = new Grid(new \App\Good);
+        $grid->model()->where(['in_selling' => 1, 'cate_id' => 1])->orderBy('goods_stock');
+        $grid->id('ID');
+        $grid->image_url('商品图片')->image(100,100);
+        $grid->goods_name('商品名称');
+        $grid->market_price('市场价格');
+        $grid->group_price('会员价格');
+        $grid->updated_at('更新时间');
+        $grid->in_selling('商家状态')->display(function($isSelling){
+            return $isSelling == 1 ? '上架' : '下架';
+        });
+        $grid->actions(function ($actions) {
+            $actions->disableView();
+            $actions->disableDelete();
+            $actions->disableEdit();
+            $isSelling = $actions->row->in_selling == 1 ? '下架' : '上架';
+            $actions->append('<a href="/admin/orders/'.$actions->row->id.'/edit" style="margin-right:5px;">修改</a>');
+            $actions->append('<a href="/admin/orders/'.$actions->row->id.'/isselling/'.$actions->row->in_selling.'" style="margin-right:5px;">'.$isSelling.'</a>');
+        });
+        $grid->tools(function ($tools) {
+            $tools->batch(function ($batch) {
+                $batch->disableDelete();
+            });
+        });
+        $grid->disableCreateButton();
+        $grid->disableExport();
+        $grid->disableFilter();
+
+        return $grid;
+    }
+
+    public function updateS($id, $isSelling)
+    {
+        $data = ['in_selling'=>1]; //下架
+        if($isSelling == 1)
+        {
+            $data['in_selling'] = 0; //上架
+        }
+        \App\Good::upd($id, $data);
+        return redirect('/admin/orders/stock/real');
     }
 
     /**
@@ -92,8 +159,8 @@ class OrderController extends Controller
         $grid->card_amount('卡付金额');
         $grid->pay_amount('实付金额');
         $grid->order_type('购买类型')->display(function($orderType){
-            $cateArr = [0=>'农产品', 1=>'客房', 2=>'伊甸卡'];
-            return $cateArr[$orderType];
+            
+            return self::$cateArr[$orderType];
         });
         $grid->order_time('下单时间')->display(function($orderTime){
             return date('Y-m-d H:i:s', $orderTime);
@@ -106,19 +173,7 @@ class OrderController extends Controller
             }
         });
         $grid->order_status('订单状态')->display(function($orderStatus){
-            $statusArr = [
-                0 => '待支付',
-                1 => '待确认',
-                2 => '待发货',
-                3 => '配送中',
-                4 => '已签收',
-                5 => '已取消',
-                6 => '未发货退款处理中',
-                7 => '未发货退款成功',
-                8 => '已发货退款处理中',
-                9 => '已发货退款成功',
-            ];
-            return $statusArr[$orderStatus];
+            return self::$statusArr[$orderStatus];
         });
         $grid->actions(function ($actions) {
             $actions->disableDelete();
@@ -131,45 +186,150 @@ class OrderController extends Controller
                 $batch->disableDelete();
             });
         });
-        // $grid->goods_id('Goods id');
-        // $grid->group_order_id('Group order id');
-        // $grid->group_header('Group header');
-        // $grid->pay_id('Pay id');
-        // $grid->pay_sn('Pay sn');
-        // $grid->group_buy('Group buy');
-        // $grid->province_id('Province id');
-        // $grid->province_name('Province name');
-        // $grid->city_id('City id');
-        // $grid->city_name('City name');
-        // $grid->district_id('District id');
-        // $grid->district_name('District name');
-        // $grid->mobile('Mobile');
-        // $grid->receive_name('Receive name');
-        // $grid->nickname('Nickname');
-        // $grid->order_goods('Order goods');
-        // $grid->goods_amount('Goods amount');
-        // $grid->shipping_address('Shipping address');
-        // $grid->shipping_amount('Shipping amount');
-        // $grid->shipping_time('Shipping time');
-        // $grid->shipping_name('Shipping name');
-        // $grid->shipping_code('Shipping code');
-        // $grid->tracking_number('Tracking number');
-        // $grid->received_time('Received time');
-        // $grid->start_date('Start date');
-        // $grid->end_date('End date');
-        // $grid->book_name('Book name');
-        // $grid->book_phone('Book phone');
-        // $grid->book_days('Book days');
-        // $grid->logistics('Logistics');
-        // $grid->tables('Tables');
-        // $grid->sf_img('Sf img');
-        // $grid->is_dian('Is dian');
-        // $grid->express_fee('Express fee');
-        // $grid->pay_type('Pay type');
-        // $grid->created_at('Created at');
-        // $grid->updated_at('Updated at');
+
+        $grid->filter(function($filter){
+
+            $filter->disableIdFilter();
+            $filter->equal('order_sn', '订单号');
+            $filter->where(function ($query) {
+                $query->whereHas('members', function ($query) {
+                    $query->where('nickname', 'like', "%{$this->input}%");
+                });
+
+            }, '买家');
+            $filter->equal('order_status', '订单状态')->select(self::$statusArr);
+            $filter->between('order_time', '下单时间')->date();
+    });
+
 
         return $grid;
+    }
+
+    protected function getInfo($id)
+    {
+        $retArr = [];
+        $orderInfo = DB::table('orders')->where('id', $id)->first();
+        $payInfo = DB::table('paylogs')->where('id', $orderInfo->pay_id)->first();
+        $orderInfo->order_goods = unserialize($orderInfo->order_goods);
+        $orderInfo->OrderGoods = DB::table('order_goods')->where('orders_id', $id)->get()->all();
+        if($orderInfo->order_type == 1)//预定房间
+         {
+             $tinfo = $orderInfo->OrderGoods[0];
+             $tinfo->goods_name =  $tinfo->goods_name.' '.$orderInfo->start_date.'~'.$orderInfo->end_date.' '.$orderInfo->book_days.'天';
+             $orderInfo->tinfo = $tinfo;
+         }
+         $memberInfo = DB::table('members')->where('id', $orderInfo->buyer_id)->first();
+         $groupInfo = null;
+         if($orderInfo->group_order_id > 0 && $orderInfo->pay_time > 0){
+            $groupInfo = DB::table('groups')->where('id', $orderInfo->group_order_id)->first();
+         }
+         $nextOrder = DB::table('orders')->where('id', 'gt', $orderInfo->id)->first();
+         $preOrder = DB::table('orders')->where('id', 'lt', $orderInfo->id)->first();
+         $logInfo = DB::table('order_logs')->where('order_id', $id)->get()->all();
+         $orderInfo->order_time = date('Y-m-d H:i:s', $orderInfo->order_time);
+         if($payInfo->pay_done_time)
+         {
+            $payInfo->pay_done_time = date('Y-m-d H:i:s', $payInfo->pay_done_time);
+         }else{
+            $payInfo->pay_done_time = '';
+         }
+         if($orderInfo->shipping_time)
+         {
+            $orderInfo->shipping_time = date('Y-m-d H:i:s', $orderInfo->shipping_time);
+         }else{
+            $orderInfo->shipping_time = '';
+         }
+         return [
+            'orderInfo' => $orderInfo,
+            'payInfo' => $payInfo,
+            'memberInfo' => $memberInfo,
+            'logInfo' => $logInfo,
+            'groupInfo' => $groupInfo,
+            'nextOrder' => $nextOrder,
+            'preOrder' => $preOrder
+         ];
+    }
+
+    public function printInfo($id, Content $content)
+    {
+        return $content
+            ->header('后台')
+            ->description('订单管理')
+            ->row($this->getPrintInfo($id));
+       
+    }
+
+    public function member($id, Content $content)
+    {
+        return $content
+            ->header('后台')
+            ->description('订单管理')
+            ->row($this->getMemberInfo($id));
+       
+    }
+
+    protected function getMemberInfo($id)
+    {
+        $memberInfo = DB::table('members')->where('id', $id)->first();
+        $memberInfo->time = date('Y-m-d H:i:s', $memberInfo->time);
+        $cinfo = DB::table('member_cards')
+                    ->where(['mid'=>$id, 'ctype'=>3, 'status'=>1])
+                    ->get()->all();
+        $memberInfo->member_cardbalance = 0;
+        foreach($cinfo as $k=>$v)
+        {
+            $memberInfo->member_cardbalance += $v->balance;
+        }
+        $dinfo = DB::table('member_cards')
+                    ->where(['mid'=>$id, 'ctype'=>4, 'status'=>1])
+                    ->get()->all();
+        foreach($dinfo as $k=>$v)
+        {
+            if(strtotime($v->end_date) >= time())
+            {
+                $memberInfo->member_carddays = intval(floor((strtotime($v->end_date)-time())/86400)) + 1;
+            }
+            $memberInfo->member_cardbalance += $v->balance;
+        }
+        $memberInfo->address_list = DB::table('address')
+                                        ->where('member_id', $id)
+                                        ->get()->all();
+        $memberInfo->order_list = DB::table('orders')
+                                    ->where('buyer_id', $id)
+                                    ->whereIn('order_status', [0,1,2,3,4])
+                                    ->get()->map(function($item, $key){
+                                         $order_name = '';
+                                         $garr = DB::table('order_goods')
+                                                    ->where('orders_id', $item->id)
+                                                    ->get()->all();
+                                         if(!empty($garr) && count($garr)>1 && $item->order_type == 0)
+                                         {
+                                             $order_name = $garr[0]->goods_name . '等';
+                                         }
+                                         else if(!empty($garr))
+                                         {
+                                             $order_name = $garr[0]->goods_name;
+                                         }
+                                        $item->order_name = $order_name;
+                                        
+                                        $item->order_status = self::$statusArr[$item->order_status];
+                                        $item->order_time = date('Y-m-d H:i:s', $item->order_time);
+                                        
+                                        return $item;
+                                    })->all();
+        return view('admin.member', [
+            'memberInfo' => $memberInfo
+        ]);
+    }
+
+    protected function getPrintInfo($id)
+    {
+         $retArr = $this->getInfo($id);
+         return view('admin.print-info', [
+            'orderInfo' => $retArr['orderInfo'],
+            'payInfo' => $retArr['payInfo'],
+            'memberInfo' => $retArr['memberInfo'],
+         ]);
     }
 
     /**
@@ -182,80 +342,18 @@ class OrderController extends Controller
     {
         // $show = new Show(Order::findOrFail($id));
 
-        $orderInfo = DB::table('orders')->where('id', $id)->first();
-        $payInfo = DB::table('paylogs')->where('id', $orderInfo->pay_id)->first();
-        $orderInfo->order_goods = unserialize($orderInfo->order_goods);
-        $orderInfo->OrderGoods = DB::table('order_goods')->where('orders_id', $id)->get()->all();
-        if($orderInfo->order_type == 1)//预定房间
-         {
-             $tinfo = $orderInfo->OrderGoods[0];
-             $tinfo->goods_name =  $tinfo->goods_name.' '.$orderInfo->start_date.'~'.$orderInfo->end_date.' '.$orderInfo->book_days.'天';
-             $orderInfo->tinfo = $tinfo;
-         }
-         $memberInfo = DB::table('members')->where('id', $orderInfo->buyer_id)->first();
-         if($orderInfo->group_order_id > 0 && $orderInfo->pay_time > 0){
-            $groupInfo = DB::table('groups')->where('id', $orderInfo->group_order_id)->first();
-         }
-         $nextOrder = DB::table('orders')->where('id', 'gt', $orderInfo->id)->first();
-         $preOrder = DB::table('orders')->where('id', 'lt', $orderInfo->id)->first();
-         $logInfo = DB::table('order_logs')->where('order_id', $id)->get();
+        $retArr = $this->getInfo($id);
+         // dd($orderInfo, $payInfo, $memberInfo, $logInfo, $groupInfo, $nextOrder, $preOrder);
         return view('admin.order', [
-            'orderInfo' => $orderInfo,
-            'payInfo' => $payInfo,
-            'memberInfo' => $memberInfo,
-            'logInfo' => $logInfo,
-            'groupInfo' => $groupInfo,
-            'nextOrder' => $nextOrder,
-            'preOrder' => $preOrder
+            'orderInfo' => $retArr['orderInfo'],
+            'payInfo' => $retArr['payInfo'],
+            'memberInfo' => $retArr['memberInfo'],
+            'logInfo' => $retArr['logInfo'],
+            'groupInfo' => $retArr['groupInfo'],
+            'nextOrder' => $retArr['nextOrder'],
+            'preOrder' => $retArr['preOrder']
         ]);
 
-        // $show->id('Id');
-        // $show->buyer_id('Buyer id');
-        // $show->order_sn('Order sn');
-        // $show->goods_id('Goods id');
-        // $show->group_order_id('Group order id');
-        // $show->group_header('Group header');
-        // $show->pay_id('Pay id');
-        // $show->pay_sn('Pay sn');
-        // $show->group_buy('Group buy');
-        // $show->province_id('Province id');
-        // $show->province_name('Province name');
-        // $show->city_id('City id');
-        // $show->city_name('City name');
-        // $show->district_id('District id');
-        // $show->district_name('District name');
-        // $show->mobile('Mobile');
-        // $show->receive_name('Receive name');
-        // $show->nickname('Nickname');
-        // $show->order_goods('Order goods');
-        // $show->goods_amount('Goods amount');
-        // $show->order_amount('Order amount');
-        // $show->card_amount('Card amount');
-        // $show->pay_amount('Pay amount');
-        // $show->shipping_address('Shipping address');
-        // $show->shipping_amount('Shipping amount');
-        // $show->shipping_time('Shipping time');
-        // $show->shipping_name('Shipping name');
-        // $show->shipping_code('Shipping code');
-        // $show->tracking_number('Tracking number');
-        // $show->order_status('Order status');
-        // $show->order_time('Order time');
-        // $show->pay_time('Pay time');
-        // $show->received_time('Received time');
-        // $show->start_date('Start date');
-        // $show->end_date('End date');
-        // $show->book_name('Book name');
-        // $show->book_phone('Book phone');
-        // $show->order_type('Order type');
-        // $show->book_days('Book days');
-        // $show->logistics('Logistics');
-        // $show->tables('Tables');
-        // $show->sf_img('Sf img');
-        // $show->is_dian('Is dian');
-        // $show->express_fee('Express fee');
-        // $show->pay_type('Pay type');
-        // $show->created_at('Created at');
-        // $show->updated_at('Updated at');
 
         return $show;
     }
@@ -267,52 +365,46 @@ class OrderController extends Controller
      */
     protected function form()
     {
-        $form = new Form(new Order);
+        $form = new Form(new \App\Good);
 
-        $form->number('buyer_id', 'Buyer id');
-        $form->text('order_sn', 'Order sn');
-        $form->number('goods_id', 'Goods id');
-        $form->number('group_order_id', 'Group order id');
-        $form->switch('group_header', 'Group header');
-        $form->number('pay_id', 'Pay id');
-        $form->text('pay_sn', 'Pay sn');
-        $form->switch('group_buy', 'Group buy');
-        $form->number('province_id', 'Province id');
-        $form->text('province_name', 'Province name');
-        $form->number('city_id', 'City id');
-        $form->text('city_name', 'City name');
-        $form->number('district_id', 'District id');
-        $form->text('district_name', 'District name');
-        $form->mobile('mobile', 'Mobile');
-        $form->text('receive_name', 'Receive name');
-        $form->text('nickname', 'Nickname');
-        $form->textarea('order_goods', 'Order goods');
-        $form->decimal('goods_amount', 'Goods amount');
-        $form->decimal('order_amount', 'Order amount');
-        $form->decimal('card_amount', 'Card amount');
-        $form->decimal('pay_amount', 'Pay amount');
-        $form->text('shipping_address', 'Shipping address');
-        $form->decimal('shipping_amount', 'Shipping amount');
-        $form->number('shipping_time', 'Shipping time');
-        $form->text('shipping_name', 'Shipping name');
-        $form->text('shipping_code', 'Shipping code');
-        $form->text('tracking_number', 'Tracking number');
-        $form->switch('order_status', 'Order status');
-        $form->number('order_time', 'Order time');
-        $form->number('pay_time', 'Pay time');
-        $form->number('received_time', 'Received time');
-        $form->date('start_date', 'Start date')->default(date('Y-m-d'));
-        $form->date('end_date', 'End date')->default(date('Y-m-d'));
-        $form->text('book_name', 'Book name');
-        $form->text('book_phone', 'Book phone');
-        $form->switch('order_type', 'Order type');
-        $form->number('book_days', 'Book days');
-        $form->text('logistics', 'Logistics');
-        $form->number('tables', 'Tables');
-        $form->textarea('sf_img', 'Sf img');
-        $form->number('is_dian', 'Is dian');
-        $form->number('express_fee', 'Express fee');
-        $form->number('pay_type', 'Pay type');
+        $form->text('goods_name', '商品名称');
+        $cateArr = \App\GoodsCate::getCates();
+        $form->select('cate_id', '商品种类')->options($cateArr);
+        $npcCatesArr = \App\NpcCate::getNpcCates();
+        $form->select('ncp_cate_id', '产品分类')->options($npcCatesArr);
+        $form->text('goods_stock', '商品库存');
+        $form->text('market_price', '市场价');
+        $form->text('group_price', '促销价');
+        $form->text('goods_sn', '商品货号');
+        $form->text('heavy', '重量/斤');
+        $form->text('manjian', '满件包邮/斤');
+        $form->text('mane', '满件包邮/元');
+        $form->radio('is_recommend', '是否推荐')->options(['0' => '否', '1'=> '是']);
+        $form->radio('is_new', '是否新品')->options(['0' => '否', '1'=> '是']);
+        $form->text('goods_sort', '排序权重');
+        $form->image('image_url', '商品展示图');
+        $form->multipleImage('goods_imgs', '商品轮播图');
+        $form->editor('goods_desc', '商品详情');
+        $form->textarea('desc', '商品简介')->rows(10);
+
+        $form->tools(function (Form\Tools $tools) {
+            $tools->disableDelete();
+            $tools->disableView();
+            $tools->disableList();
+        });
+
+        $form->footer(function ($footer) {
+            $footer->disableReset();
+            $footer->disableViewCheck();
+            $footer->disableEditingCheck();
+            $footer->disableCreatingCheck();
+        });
+
+        $form->saved(function (Form $form) {
+
+            return redirect('/admin/orders/stock/real');
+
+        });
 
         return $form;
     }

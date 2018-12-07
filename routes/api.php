@@ -38,3 +38,9 @@ Route::get('/discount', function (Request $request) {
 		    	->value('alone_price');
 	return [['id' => $alonePrice, 'text' => $alonePrice]];
 });
+
+Route::get('/sylists', 'Api\GoodsCateController@syList');
+Route::get('/glists', 'Api\GoodsController@gList');
+Route::get('/clists', 'Api\GoodsCateController@cList');
+Route::get('/gdetails', 'Api\GoodsController@gDetail');
+Route::get('/wume', 'Api\WeUserController@me');

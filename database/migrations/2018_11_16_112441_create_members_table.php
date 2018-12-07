@@ -15,19 +15,19 @@ class CreateMembersTable extends Migration
     {
         Schema::create('members', function (Blueprint $table) {
             $table->increments('id');
-            $table->string('open_id');
-            $table->string('wx_open_id');
-            $table->string('access_token');
-            $table->integer('expires');
-            $table->string('refresh_token');
-            $table->string('unionid');
-            $table->string('nickname', 50);
-            $table->tinyInteger('subscribe');
-            $table->tinyInteger('sex');
-            $table->string('headimgurl');
-            $table->tinyInteger('disablle');
-            $table->integer('time');
-            $table->string('phone', 11);
+            $table->string('open_id')->default('');
+            $table->string('wx_open_id')->default('');
+            $table->string('access_token')->default('');
+            $table->integer('expires')->default(0);
+            $table->string('refresh_token')->default('');
+            $table->string('unionid')->default('');
+            $table->string('nickname')->default('');
+            $table->tinyInteger('subscribe')->default(0);
+            $table->tinyInteger('sex')->default(0);
+            $table->string('headimgurl')->default('');
+            $table->tinyInteger('disablle')->default(0);
+            $table->integer('time')->default(0);
+            $table->string('phone')->default('');
             $table->timestamps();
         });
     }

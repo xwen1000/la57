@@ -15,10 +15,10 @@ class CreateNpcCatesTable extends Migration
     {
         Schema::create('npc_cates', function (Blueprint $table) {
             $table->increments('id');
-            $table->integer('cid');
-            $table->string('cate_name', 50);
-            $table->integer('sort');
-            $table->integer('time');
+            $table->integer('cid')->default(0);
+            $table->string('cate_name')->default('');
+            $table->integer('sort')->default(0);
+            $table->integer('time')->default(0);
             $table->timestamps();
         });
     }

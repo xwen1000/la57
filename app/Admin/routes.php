@@ -21,6 +21,7 @@ Route::group([
      $router->resource('room', RoomController::class);
      $router->get('room/delete/{id}', 'RoomController@delete');
      $router->get('room/{id}/isselling/{isSelling}', 'RoomController@updateS');
+     $router->get('room/sale/{id}', 'RoomController@sale');
      $router->resource('news', NewsController::class);
      $router->get('news/{id}/status/{status}', 'NewsController@updateS');
      $router->resource('members', MemberController::class);
@@ -36,6 +37,10 @@ Route::group([
      $router->resource('newscates', NewsCateController::class);
      $router->get('newscates/delete/{id}', 'NewsCateController@delete');
      $router->resource('orders', OrderController::class);
+     $router->get('orders/printInfo/{id}', 'OrderController@printInfo');
+     $router->get('orders/member/{id}', 'OrderController@member');
+     $router->get('orders/stock/real', 'OrderController@realStock');
+     $router->get('orders/{id}/isselling/{isSelling}', 'OrderController@updateS');
      $router->resource('cards', CardsController::class);
      $router->get('cards/delete/{id}', 'CardsController@delete');
      $router->get('cards/{id}/isselling/{isSelling}', 'CardsController@updateS');

@@ -22,11 +22,12 @@
     	<table class="table table-bordered order-table">
 			<caption>订单详情</caption>
 			<tr>
-				<td><span>仓库打印机:</span><button class="btn btn-primary">打印</button></td>
-				<td><span>顺丰运单号:</span>
+				<td><span>仓库打印机:</span><a href="/admin/orders/printInfo/{{$orderInfo->id}}" class="btn btn-primary">打印</a></td>
+				<td>
 					@if($orderInfo->logistics)
-						<a href="">运单详情</a>
-						<button class="btn btn-primary">打印</button>
+					<span>顺丰运单号:</span>
+					<span>{{$orderInfo->logistics}}</span>
+					<button type="button" class="btn btn-primary">打印</button>
 					@endif
 				</td>
 			</tr>
@@ -73,7 +74,7 @@
 			<tr>
 				<td><span>购买人:</span>
 					{{ $memberInfo->nickname }}
-					<a href="#">[显示购买人信息]</a>
+					<a href="/admin/orders/member/{{ $memberInfo->id }}">[显示购买人信息]</a>
 				</td>
 				<td><span>下单时间:</span>{{ $orderInfo->order_time }}</td>
 			</tr>
@@ -86,7 +87,9 @@
 					{{ $orderInfo->shipping_name }}
 					{{ $orderInfo->tracking_number }}
 				</td>
-				<td><span>发货时间:</span>{{ $orderInfo->shipping_time }}</td>
+				<td><span>发货时间:</span>
+					{{ $orderInfo->shipping_time }}
+				</td>
 			</tr>
 			<tr>
 				<td><span>收货人:</span>{{ $orderInfo->receive_name }}</td>
@@ -112,7 +115,7 @@
 			@foreach($orderInfo->OrderGoods as $k => $v)
 			<tr>
 				<td><img src="{{ $v->image_url }}" width="100" height="100"></td>
-				<td><a href="#">{{ $v->goods_name }}</a></td>
+				<td>{{ $v->goods_name }}</td>
 				<td>{{ $v->quantity }}</td>
 				<td>{{ $v->goods_price }}元</td>
 			</tr>
@@ -178,3 +181,9 @@
 		</table>
     </div>
 </div>
+<script>
+	// $('#print').click(function(){
+	// 	window.location = '/admin/orders/printInfo/'+{{$orderInfo->id}};
+	// 	// window.print();
+	// });
+</script>

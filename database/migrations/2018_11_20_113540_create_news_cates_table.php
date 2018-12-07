@@ -15,9 +15,9 @@ class CreateNewsCatesTable extends Migration
     {
         Schema::create('news_cates', function (Blueprint $table) {
             $table->increments('id');
-            $table->string('cate_name', 50);
-            $table->integer('sort');
-            $table->integer('time');
+            $table->string('cate_name')->default('');
+            $table->integer('sort')->default(0);
+            $table->integer('time')->default(0);
             $table->timestamps();
         });
     }
